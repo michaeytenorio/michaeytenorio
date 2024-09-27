@@ -1,0 +1,136 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: EC2 Stack Set
+
+Parameters:
+  InstanceSize:
+    Description: Instance Type
+    Type: String
+    Default: Free.Tier-t2.micro
+    AllowedValues:
+      - Free.Tier-t2.micro
+      - Standard.Tier-t3.micro
+
+  Zzz:
+    Description: Name of active Cloudformation stack that contains the network resources.
+    Type: String
+    MinLength: 1
+    MaxLength: 225
+    AllowedPattern: ^[a-zA-Z][a-zA-Z0-9]*$
+    Default: NetworkStack
+
+Mappings:
+  AWSInstanceType:
+    Free.Tier-t2.micro:
+      InstanceType: t2.micro
+    Standard.Tier-t3.micro:
+      InstanceType: t3.micro
+
+  AWSRegionArch2AMI:
+    us-east-1:
+      HVM64: ami-0f7da9f04f9ce286a
+    us-east-2:
+      HVM64: ami-0f7da9f04f9ce286a
+    us-west-1:
+      HVM64: ami-0f7da9f04f9ce286a
+    us-west-2:
+      HVM64: ami-0f7da9f04f9ce286a
+    eu-west-1:
+      HVM64: ami-0f7da9f04f9ce286a
+    eu-west-2:
+      HVM64: ami-0f7da9f04f9ce286a
+    eu-west-3:
+      HVM64: ami-0f7da9f04f9ce286a
+    eu-central-1:
+      HVM64: ami-0f7da9f04f9ce286a
+    ap-northeast-1:
+      HVM64: ami-0f7da9f04f9ce286a
+    ap-northeast-2:
+      HVM64: ami-0f7da9f04f9ce286a
+    ap-southeast-1:
+      HVM64: ami-0f7da9f04f9ce286a
+    ap-southeast-2:
+      HVM64: ami-0f7da9f04f9ce286a
+    sa-east-1:
+      HVM64: ami-0f7da9f04f9ce286a
+    ap-south-1:
+      HVM64: aami-0f7da9f04f9ce286a
+    ca-central-1:
+      HVM64: ami-0f7da9f04f9ce286a
+    eu-north-1:
+      HVM64: ami-0f7da9f04f9ce286a
+    me-south-1:
+      HVM64: ami-0f7da9f04f9ce286a
+    ap-east-1:
+      HVM64: ami-0f7da9f04f9ce286a
+
+
+Resources:
+
+  MyEC2PublicInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: ami-01fb4de0e9f8f22a7
+      InstanceType:
+           Fn::FindInMap:
+           - AWSInstanceType
+           - Ref: InstanceSize
+           - InstanceType
+      KeyName: testkeypair
+      Tags:
+        - Key: Name
+          Value: public-instance
+      BlockDeviceMappings:
+        - DeviceName: /dev/sdm
+          Ebs:
+            VolumeType: io1
+            Iops: 200
+            DeleteOnTermination: true
+            VolumeSize: 20
+      NetworkInterfaces:
+        - GroupSet: 
+            - Fn::ImportValue:
+                !Sub '${Zzz}-NATSecurityGroup'
+            - Fn::ImportValue:
+                !Sub '${Zzz}-SSHSecurityGroup'
+          AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: 
+            Fn::ImportValue:
+                !Sub '${Zzz}-PublicSubnet01'
+      VpcId: 
+          Fn::ImportValue:
+            !Sub '${Zzz}-VPC'
+
+  MyEC2PrivateInstance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: ami-01fb4de0e9f8f22a7
+      InstanceType:
+           Fn::FindInMap:
+           - AWSInstanceType
+           - Ref: InstanceSize
+           - InstanceType
+      KeyName: testkeypair
+      Tags:
+        - Key: Name
+          Value: private-instance
+      BlockDeviceMappings:
+        - DeviceName: /dev/sdm
+          Ebs:
+            VolumeType: io1
+            Iops: 200
+            DeleteOnTermination: true
+            VolumeSize: 20
+      NetworkInterfaces:
+        - GroupSet: 
+            - Fn::ImportValue:
+                !Sub '${Zzz}-InternalSecurityGroup'
+          AssociatePublicIpAddress: true
+          DeviceIndex: 0
+          SubnetId: 
+           Fn::ImportValue:
+             !Sub '${Zzz}-PrivateSubnet00'
+      VpcId: 
+          Fn::ImportValue:
+            !Sub '${Zzz}-VPC'
