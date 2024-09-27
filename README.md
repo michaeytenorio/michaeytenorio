@@ -1,7 +1,7 @@
 - 👋 Hi, I’m @michaeytenorio
 - 👀 I’m interested in learning how to program and code.
-- 🌱 I’m currently learning html and css to be a frontend web developer and soon be a full stack web dev.
-- 💞️ I’m looking to collaborate on php, javascript. 
+- 🌱 I’m currently learning Ansible
+- 💞️ I’m looking to collaborate on AWS Cloudformation, Automation 
 - 📫 How to reach me send me an email at yeahcimoironet@gmail.com
 
 <!---
